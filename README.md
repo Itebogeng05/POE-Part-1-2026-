@@ -72,3 +72,4 @@ An unlisted YouTube video walking through the planning documents, ERD decisions,
 ## AI Tool Disclosure
 
 AI tools were used during the planning process to assist with drafting the ERD structure, the API endpoint plan, and the SQL script template. All output was reviewed, adapted, and verified against the assignment requirements before submission.
+Update README for Part 1
