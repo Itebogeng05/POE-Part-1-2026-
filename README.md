@@ -8,7 +8,7 @@ This repository contains the Portfolio of Evidence (PoE) for RaceDay. **This REA
 
 ## System Description
 
-South Africa hosts hundreds of road running, walking, and cycling events every weekend, from major events like the Comrades Marathon and the Cape Town Cycle Tour down to local park runs and charity rides. Many of these are still managed with paper registration and spreadsheets. RaceDay digitises this process: Organisers can create events with multiple categories (e.g. 5km, 10km), Participants can register and enter events online, and results are captured and tracked in one place.
+From the legendary Comrades Marathon and the Cape Town Cycle Tour to countless local park runs and charity rides, South Africa's road event calendar is packed every single weekend.Many of these are still managed with paper registration and spreadsheets. RaceDay digitises this process: Organisers can create events with multiple categories (e.g. 5km, 10km), Participants can register and enter events online, and results are captured and tracked in one place.
 
 ## User Roles
 
