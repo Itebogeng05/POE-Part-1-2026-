@@ -57,7 +57,8 @@ This repository uses GitHub Actions (`.github/workflows/dotnet-ci.yml`) for cont
 
 **Successful build screenshot:**
 
-> _[Insert screenshot of a green/successful GitHub Actions run here]_
+> <img width="1361" height="632" alt="Screenshot 2026-09-04 224857" src="https://github.com/user-attachments/assets/4a21c612-39d3-43ac-812a-1415b91c4530" />
+
 
 ---
 
