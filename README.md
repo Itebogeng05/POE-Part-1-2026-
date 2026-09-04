@@ -2,7 +2,7 @@
 
 A full-stack event management system for the South African road running, walking, and cycling community. RaceDay lets Event Organisers create and manage events, categories, and participant results, while Participants can browse events, enter categories, and track their own results.
 
-This repository contains the Portfolio of Evidence (PoE) for RaceDay. **This README currently covers Part 1 (System Planning and Database).** Part 2 (RESTful API) and Part 3 (MVC application) will extend this repository and this README as they are completed.
+This repository contains the Portfolio of Evidence (PoE) for RaceDay.This README currently covers Part 1 (System Planning and Database). Part 2 (RESTful API) and Part 3 (MVC application) will extend this repository and this README as they are completed.
 
 ---
 
@@ -58,6 +58,7 @@ README.md
 This repository uses GitHub Actions (`.github/workflows/dotnet-ci.yml`) for continuous integration. It runs on every push and pull request to `main`. During Part 1, there is no C# project yet, so the workflow detects this and passes automatically. From Part 2 onward, it will restore, build, and run tests against the actual API project.
 
 **Successful build screenshot:**
+All workflows pushed successfully.
 
 > <img width="1361" height="632" alt="Screenshot 2026-09-04 224857" src="https://github.com/user-attachments/assets/4a21c612-39d3-43ac-812a-1415b91c4530" />
 
