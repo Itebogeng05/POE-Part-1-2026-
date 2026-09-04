@@ -73,4 +73,5 @@ An unlisted YouTube video walking through the planning documents, ERD decisions,
 ## AI Tool Disclosure
 
 AI tool (Claude) was used during the planning process to assist with drafting the ERD structure. All output was reviewed, adapted, and verified against the assignment requirements before submission.
-Update README for Part 1
+
+Update README for Part 1 with 20 commits
