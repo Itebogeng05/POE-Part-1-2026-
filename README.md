@@ -1,8 +1,4 @@
 name: RaceDay CI
-
-# Runs on every push and pull request targeting main.
-# During Part 1 (planning only, no C# code yet) this passes automatically.
-# Once a .NET project exists (Part 2 onward), it will actually build and test it.
 on:
   push:
     branches: [ "main" ]
