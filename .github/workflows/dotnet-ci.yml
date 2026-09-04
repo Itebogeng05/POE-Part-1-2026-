@@ -1,7 +1,5 @@
 name: RaceDay CI
 
-# Runs on every push and pull request targeting main, so you get a
-# green check mark as soon as the API project (Part 2) is in the repo.
 on:
   push:
     branches: [ "main" ]
@@ -16,16 +14,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check for .NET project files
+        id: check_project
+        run: |
+          PROJECT_FILES=$(git ls-files '*.sln' '*.csproj')
+          if [ -n "$PROJECT_FILES" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup .NET
+        if: steps.check_project.outputs.found == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
+        if: steps.check_project.outputs.found == 'true'
         run: dotnet restore
 
       - name: Build
+        if: steps.check_project.outputs.found == 'true'
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests
+        if: steps.check_project.outputs.found == 'true'
         run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: No .NET project yet
+        if: steps.check_project.outputs.found == 'false'
+        run: echo "No .sln or .csproj tracked in git yet — skipping build. Expected during Part 1 (planning stage)."
