@@ -1,47 +1,39 @@
-name: RaceDay CI
+name: Part 2 - Build and Test
 
+# Runs on every push and pull request, on any branch.
 on:
   push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Check for .NET project files
-        id: check_project
-        run: |
-          PROJECT_FILES=$(git ls-files '*.sln' '*.csproj')
-          if [ -n "$PROJECT_FILES" ]; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "found=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Setup .NET
-        if: steps.check_project.outputs.found == 'true'
+      - name: Set up .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        if: steps.check_project.outputs.found == 'true'
-        run: dotnet restore
-
-      - name: Build
-        if: steps.check_project.outputs.found == 'true'
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Run tests
-        if: steps.check_project.outputs.found == 'true'
-        run: dotnet test --no-build --configuration Release --verbosity normal
-
-      - name: No .NET project yet
-        if: steps.check_project.outputs.found == 'false'
-        run: echo "No .sln or .csproj tracked in git yet — skipping build. Expected during Part 1 (planning stage)."
+      # Finds EVERY solution in the repo (any folder) and builds + tests each one.
+      - name: Build and test all solutions
+        shell: bash
+        run: |
+          set -e
+          mapfile -t solutions < <(find . -name '*.sln' -not -path './.git/*' | sort)
+          if [ ${#solutions[@]} -eq 0 ]; then
+            echo "No .sln files found in the repository."
+            exit 1
+          fi
+          for sln in "${solutions[@]}"; do
+            echo "=============================="
+            echo "Solution: $sln"
+            echo "=============================="
+            dotnet restore "$sln"
+            dotnet build "$sln" --configuration Release --no-restore
+            dotnet test "$sln" --configuration Release --no-build --verbosity normal
+          done
