@@ -1,80 +1,106 @@
-# RaceDay – Part 1: System Planning and Database
+# RaceDay API (Part 2)
 
-A full-stack event management system for the South African road running, walking, and cycling community. RaceDay lets Event Organisers create and manage events, categories, and participant results, while Participants can browse events, enter categories, and track their own results.
+A RESTful API built with ASP.NET Core Web API (.NET 8) and Entity Framework Core (Code-First, SQL Server).
+It implements the endpoint plan from Part 1 (`API_Endpoint_Plan.md`).
 
-This repository contains the Portfolio of Evidence (PoE) for RaceDay.This README currently covers Part 1 (System Planning and Database). Part 2 (RESTful API) and Part 3 (MVC application) will extend this repository and this README as they are completed.
+![Build status](docs/green-build.png)
 
----
+> Replace `docs/green-build.png` with your own screenshot of a successful (green) GitHub Actions run.
 
-## System Description
+**Demo video (unlisted YouTube):** PASTE_YOUR_YOUTUBE_LINK_HERE
 
-From the legendary Comrades Marathon and the Cape Town Cycle Tour to countless local park runs and charity rides, South Africa's road event calendar is packed every single weekend.Despite this, event organisation often still depends on manual paper forms and spreadsheets. RaceDay replaces that with a digital system. Organisers can set up events with multiple categories (like 5km or 10km), Participants can register and enter online, and all results are captured and tracked in a single place.
+## The two roles
 
-Reworded system description for clarity
+| Role | What they can do |
+|---|---|
+| **Organiser** | Create, update and delete their own events. Add, update and delete categories on their events. View everyone enrolled in their events. Capture and correct results. |
+| **Participant** | Browse events and categories. Enrol in an event by choosing a category. View and cancel their own enrolments. View their own results. |
 
-## User Roles
+Both roles can register, log in and view/update their own profile. Browsing events, categories and event results is public.
 
-RaceDay supports two distinct user roles:
+How roles are managed: the role is chosen at registration, but it is validated against the fixed `Roles` table
+(only `Organiser` and `Participant` exist) and is never accepted as a free ID. The role is then stored inside the
+signed JWT, so the user cannot change it afterwards.
 
-- **Organiser** — can create, edit, and delete events; manage event categories; capture participant results; and view all enrolments for events they own.
-- **Participant** — can create an account, browse events, enter an event by selecting a category, view their own enrolments, and track their personal results.
+## Authentication and sessions
 
-Role-based access will be enforced at the API level in Part 2 and reflected consistently in the MVC interface in Part 3.
+* `POST /api/auth/register` stores a **BCrypt hash** of the password (never the password itself).
+* `POST /api/auth/login` returns a **JWT** containing the user's ID and role. This is the session: the client sends it as `Authorization: Bearer <token>` on every later request.
+* Non-public endpoints return **401** without a valid token, and **403** if the role is wrong or the Organiser does not own the event.
 
----
+## Setup and run
 
-## Repository Structure (Part 1)
+Requirements: Visual Studio 2022 (ASP.NET workload) or the .NET 8 SDK, and SQL Server / LocalDB.
+
+1. Open `Part2/RaceDay.sln`.
+2. Check the connection string in `RaceDay.Api/appsettings.json` (defaults to LocalDB, database `RaceDayDB`).
+3. Create the database with a migration. In Visual Studio open **Tools > NuGet Package Manager > Package Manager Console**, set the default project to `RaceDay.Api` and run:
+   ```
+   Add-Migration InitialCreate
+   Update-Database
+   ```
+   Or from a terminal in the `Part2` folder:
+   ```
+   dotnet tool install --global dotnet-ef
+   dotnet ef migrations add InitialCreate --project RaceDay.Api
+   dotnet ef database update --project RaceDay.Api
+   ```
+4. Run `RaceDay.Api` (F5 or `dotnet run --project RaceDay.Api`). Swagger opens at `/swagger`.
+5. In Swagger: register a user, log in, click **Authorize**, paste the token, then try the endpoints.
+
+The `Roles` table is seeded automatically (Organiser, Participant).
+
+## Run the tests
 
 ```
-/docs
-  ├── RaceDay_ERD.png                 # Entity Relationship Diagram
-  ├── API_Endpoint_Plan.md            # Full API endpoint plan
-  └── RaceDay_Database.sql            # SQL database creation & seed script
-/.github
-  └── workflows
-      └── dotnet-ci.yml               # CI/CD workflow
-README.md
+dotnet test Part2/RaceDay.sln
 ```
 
----
-
-## Part 1 Deliverables
-
-- **ERD:** [`/docs/RaceDay_ERD.png`](./docs/RaceDay_ERD.png) — six entities (Roles, Users, Events, Categories, Enrolments, Results) with primary keys, foreign keys, and cardinality shown for every relationship.
-- **API Endpoint Plan:** [`/docs/API_Endpoint_Plan.md`](./docs/API_Endpoint_Plan.md) — every planned endpoint covering Authentication, User Profile, Events, Categories, Enrolments, and Results.
-- **SQL Script:** [`/docs/RaceDay_Database.sql`](./docs/RaceDay_Database.sql) — matches the ERD exactly.
-
-## Database Setup
-
-1. Open SQL Server Management Studio (SSMS).
-2. Open `/docs/RaceDay_Database.sql`.
-3. Execute the script against your SQL Server instance. This creates the `RaceDayDB` database, all six tables, and seeds sample data (2 Organisers, 2 Participants, 3 Events, categories, and enrolments).
-4. Verify the tables loaded correctly by running the verification queries commented at the bottom of the script.
-
----
+The tests start the real API in memory with an in-memory database, so they need no SQL Server.
+They cover registration/login, event management, role-based rejection, enrolments and results,
+each with success and failure cases.
 
 ## CI/CD
 
-This repository uses GitHub Actions (`.github/workflows/dotnet-ci.yml`) for continuous integration. It runs on every push and pull request to `main`. During Part 1, there is no C# project yet, so the workflow detects this and passes automatically. From Part 2 onward, it will restore, build, and run tests against the actual API project.
+`.github/workflows/part2-ci.yml` restores, builds and runs all tests on every push.
 
-**Successful build screenshot:**
-All workflows pushed successfully.
+## Project structure
 
-> <img width="1361" height="632" alt="Screenshot 2026-09-04 224857" src="https://github.com/user-attachments/assets/4a21c612-39d3-43ac-812a-1415b91c4530" />
+```
+Part2/
+  RaceDay.Api/
+    Controllers/   Auth, Users, Events, Categories, Enrolments, Results
+    Models/        Entity classes (Role, User, Event, Category, Enrolment, Result)
+    Data/          RaceDayDbContext (Code-First mapping + seeded roles)
+    DTOs/          Request/response classes and EF projections
+    Services/      JWT token creation
+    Program.cs     Startup: EF Core, JWT auth, Swagger
+  RaceDay.Tests/   xUnit tests
+  Database/        Part2_Schema_Additions.sql
+```
 
+## Schema note (differences from Part 1)
 
----
+The Part 2 brief says every event must capture a **distance** and an **event type** (run, walk or cycle).
+The Part 1 `Events` table did not have these, so two columns were added: `EventType` and `DistanceKm`.
+Everything else matches the Part 1 ERD. The matching SQL is in `Database/Part2_Schema_Additions.sql`.
 
-## Video Walkthrough
+## Endpoints
 
-An unlisted YouTube video walking through the planning documents, ERD decisions, endpoint plan choices, and a live run of the SQL script in SSMS:
+See Swagger for the live list. Summary (same as the Part 1 plan):
 
-> https://youtu.be/H3CplLZSQmk
-
----
-
-## AI Tool Disclosure
-
-AI tool (Claude) was used during the planning process to assist with drafting the ERD structure. All output was reviewed, adapted, and verified against the assignment requirements before submission.
-
-Update README for Part 1 with 20 commits
+| Method | Route | Access |
+|---|---|---|
+| POST | /api/auth/register | Public |
+| POST | /api/auth/login | Public |
+| GET, PUT | /api/users/profile | Logged in |
+| GET | /api/events, /api/events/{id}, /api/events/{id}/categories, /api/events/{id}/results | Public |
+| POST, PUT, DELETE | /api/events, /api/events/{id} | Organiser (owner) |
+| POST | /api/events/{id}/categories | Organiser (owner) |
+| PUT, DELETE | /api/categories/{id} | Organiser (owner) |
+| GET | /api/events/{id}/enrolments | Organiser (owner) |
+| POST | /api/enrolments | Participant |
+| GET | /api/enrolments/my | Participant |
+| DELETE | /api/enrolments/{id} | Participant (owner) |
+| POST, PUT | /api/results, /api/results/{id} | Organiser (owner) |
+| GET | /api/results/my | Participant |
