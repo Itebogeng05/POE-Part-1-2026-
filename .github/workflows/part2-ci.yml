@@ -1,0 +1,37 @@
+name: Part 2 - Build and Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build and test all solutions
+        shell: bash
+        run: |
+          set -e
+          mapfile -t solutions < <(find . -name '*.sln' -not -path './.git/*' | sort)
+          if [ ${#solutions[@]} -eq 0 ]; then
+            echo "No .sln files found in the repository."
+            exit 1
+          fi
+          for sln in "${solutions[@]}"; do
+            echo "=============================="
+            echo "Solution: $sln"
+            echo "=============================="
+            dotnet restore "$sln"
+            dotnet build "$sln" --configuration Release --no-restore
+            dotnet test "$sln" --configuration Release --no-build --verbosity normal
+          done
