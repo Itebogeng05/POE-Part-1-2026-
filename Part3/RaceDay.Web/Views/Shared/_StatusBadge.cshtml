@@ -1,0 +1,7 @@
+@* Colour-coded status: green = Confirmed/Final, amber = Pending. The text is always shown too, so colour is never the only signal. *@
+@model string
+@{
+    var kind = UiFormat.StatusClass(Model);
+    var icon = kind switch { "confirmed" => "bi-check-circle-fill", "pending" => "bi-hourglass-split", "cancelled" => "bi-x-circle-fill", _ => "bi-circle" };
+}
+<span class="rd-status rd-status-@kind"><i class="bi @icon" aria-hidden="true"></i> @Model</span>

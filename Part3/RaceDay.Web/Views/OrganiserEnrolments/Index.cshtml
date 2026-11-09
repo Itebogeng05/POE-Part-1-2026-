@@ -1,0 +1,90 @@
+@model EnrolmentsPageViewModel
+@{
+    ViewData["Title"] = "Enrolments";
+}
+<div class="container">
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">Organiser</span>
+            <h1>Enrolments</h1>
+            <p class="rd-lead">See who has entered each of your events, their category and enrolment status.</p>
+        </div>
+    </div>
+
+    @if (Model.MyEvents.Count == 0)
+    {
+        <div class="rd-card rd-empty">
+            <i class="bi bi-people"></i>
+            <h2>No events yet</h2>
+            <p>Once you create an event, participants who enrol will be listed here.</p>
+            <a class="btn btn-primary" asp-controller="OrganiserEvents" asp-action="Create">Create an event</a>
+        </div>
+    }
+    else
+    {
+        <form method="get" asp-action="Index" class="rd-card rd-filter">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-9">
+                    <label for="eventId" class="form-label">Event</label>
+                    <select id="eventId" name="eventId" class="form-select" onchange="this.form.submit()">
+                        <option value="">Choose an event...</option>
+                        @foreach (var e in Model.MyEvents)
+                        {
+                            <option value="@e.EventId" selected="@(Model.Selected?.EventId == e.EventId)">@e.EventName (@UiFormat.ShortDate(e.EventDate))</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3"><button type="submit" class="btn btn-primary w-100">Show enrolments</button></div>
+            </div>
+        </form>
+
+        @if (Model.Selected is null)
+        {
+            <div class="rd-card rd-empty">
+                <i class="bi bi-hand-index-thumb"></i>
+                <h2>Pick an event</h2>
+                <p>Choose one of your events above to see everyone who has enrolled.</p>
+            </div>
+        }
+        else
+        {
+            var perCategory = Model.Enrolments.GroupBy(e => e.CategoryName).OrderBy(g => g.Key).ToList();
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                <span class="fs-5"><strong>@Model.Enrolments.Count</strong> enrolled in <strong>@Model.Selected.EventName</strong></span>
+                @foreach (var g in perCategory)
+                {
+                    <span class="rd-status rd-status-neutral">@g.Key: @g.Count()</span>
+                }
+            </div>
+
+            @if (Model.Enrolments.Count == 0)
+            {
+                <div class="rd-card rd-empty">
+                    <i class="bi bi-person-plus"></i>
+                    <h2>Nobody has enrolled yet</h2>
+                    <p>Participants will appear here as soon as they enrol.</p>
+                </div>
+            }
+            else
+            {
+                <div class="rd-card rd-table-wrap mb-5">
+                    <table class="rd-table">
+                        <thead><tr><th>Participant</th><th>Email</th><th>Category</th><th>Enrolled on</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var en in Model.Enrolments)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@en.ParticipantName</td>
+                                <td>@en.ParticipantEmail</td>
+                                <td>@en.CategoryName</td>
+                                <td>@UiFormat.DateTimeShort(en.EnrolmentDate)</td>
+                                <td><partial name="_StatusBadge" model="en.Status" /></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    }
+</div>

@@ -1,0 +1,75 @@
+@model CategoriesPageViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = "Categories - " + ev.EventName;
+}
+<div class="container">
+    <nav aria-label="breadcrumb" class="pt-4">
+        <a asp-controller="OrganiserEvents" asp-action="Index" class="text-decoration-none"><i class="bi bi-arrow-left"></i> My events</a>
+    </nav>
+
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">Categories</span>
+            <h1>@ev.EventName</h1>
+            <p class="rd-lead">@UiFormat.Date(ev.EventDate) &middot; @ev.Location &middot; Add age or distance categories participants can choose when they enrol.</p>
+        </div>
+        <a class="btn btn-outline-primary" asp-controller="OrganiserEvents" asp-action="Edit" asp-route-id="@ev.EventId"><i class="bi bi-pencil"></i> Edit event</a>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-7">
+            @if (ev.Categories.Count == 0)
+            {
+                <div class="rd-card rd-empty">
+                    <i class="bi bi-tags"></i>
+                    <h2>No categories yet</h2>
+                    <p>Participants can only enrol once the event has at least one category. Add one using the form.</p>
+                </div>
+            }
+            else
+            {
+                <div class="rd-card rd-table-wrap">
+                    <table class="rd-table">
+                        <thead><tr><th>Category</th><th class="text-end">Distance</th><th class="text-end">Entry fee</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+                        <tbody>
+                        @foreach (var c in ev.Categories.OrderBy(c => c.DistanceKm).ThenBy(c => c.CategoryName))
+                        {
+                            <tr>
+                                <td class="fw-semibold">@c.CategoryName</td>
+                                <td class="rd-num">@UiFormat.Km(c.DistanceKm)</td>
+                                <td class="rd-num">@UiFormat.Rand(c.EntryFee)</td>
+                                <td class="text-end">
+                                    <div class="rd-actions">
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-eventId="@ev.EventId" asp-route-id="@c.CategoryId"><i class="bi bi-pencil"></i> Edit</a>
+                                        <form asp-action="Delete" asp-route-eventId="@ev.EventId" asp-route-id="@c.CategoryId" method="post" class="d-inline"
+                                              data-confirm="Remove the &quot;@c.CategoryName&quot; category? Anyone enrolled in it will lose their enrolment."
+                                              data-confirm-title="Remove category" data-confirm-button="Yes, remove it">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <div class="rd-card rd-card-pad">
+                <h2 class="h3">Add a category</h2>
+                <form asp-action="Create" asp-route-eventId="@ev.EventId" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <partial name="_CategoryFields" model="Model.NewCategory" />
+                    <button type="submit" class="btn btn-primary mt-3" data-busy-text="Adding..."><i class="bi bi-plus-lg"></i> Add category</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScripts" />
+}

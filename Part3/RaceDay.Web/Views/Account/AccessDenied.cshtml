@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Access denied";
+    var user = Context.Session.GetUser();
+    var homeController = user is { IsOrganiser: true } ? "Organiser" : "Home";
+}
+<div class="container">
+    <div class="rd-card rd-empty mt-5">
+        <i class="bi bi-slash-circle"></i>
+        <h1 class="h2">That area isn't for your account</h1>
+        <p>Your account type doesn't have access to this page. Head back to the pages made for you.</p>
+        <a class="btn btn-primary" asp-controller="@homeController" asp-action="Index">Take me back</a>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="container">
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">Organiser dashboard</span>
+            <h1>Race control</h1>
+            <p class="rd-lead">A snapshot of every event you run, who has entered and what's coming up.</p>
+        </div>
+        <a class="btn btn-primary btn-lg" asp-controller="OrganiserEvents" asp-action="Create"><i class="bi bi-plus-lg"></i> New event</a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Warning))
+    {
+        <div class="alert alert-warning rd-alert" role="alert"><i class="bi bi-wifi-off"></i> <span>@Model.Warning</span></div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4"><div class="rd-card rd-stat"><i class="bi bi-calendar-event"></i><div class="rd-stat-value">@Model.TotalEvents</div><div class="rd-stat-label">Events created</div></div></div>
+        <div class="col-sm-4"><div class="rd-card rd-stat"><i class="bi bi-hourglass-split"></i><div class="rd-stat-value">@Model.UpcomingEvents</div><div class="rd-stat-label">Upcoming</div></div></div>
+        <div class="col-sm-4"><div class="rd-card rd-stat"><i class="bi bi-people-fill"></i><div class="rd-stat-value">@Model.TotalEnrolments</div><div class="rd-stat-label">Total enrolments</div></div></div>
+    </div>
+
+    @if (Model.TotalEvents == 0)
+    {
+        <div class="rd-card rd-empty">
+            <i class="bi bi-flag"></i>
+            <h2>Create your first event</h2>
+            <p>Add the details, upload a banner and set up categories. Participants can enrol as soon as it's live.</p>
+            <a class="btn btn-primary" asp-controller="OrganiserEvents" asp-action="Create">Create an event</a>
+        </div>
+    }
+    else
+    {
+        @if (Model.NextUp.Count > 0)
+        {
+            <h2 class="h3 mb-3">Next up</h2>
+            <div class="row g-3 mb-4">
+                @foreach (var s in Model.NextUp)
+                {
+                    <div class="col-md-4">
+                        <div class="rd-card rd-card-pad h-100">
+                            <span class="rd-eyebrow">@UiFormat.Date(s.Event.EventDate)</span>
+                            <h3 class="h4"><a asp-controller="Events" asp-action="Details" asp-route-id="@s.Event.EventId" class="text-decoration-none">@s.Event.EventName</a></h3>
+                            <p class="text-muted mb-2"><i class="bi bi-geo-alt-fill text-primary"></i> @s.Event.Location</p>
+                            <p class="mb-0"><strong>@s.Enrolments</strong> enrolled <span class="text-muted">&middot; @s.Event.Categories.Count categories</span></p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <h2 class="h3 mb-3">All my events</h2>
+        <div class="rd-card rd-table-wrap">
+            <table class="rd-table">
+                <thead>
+                    <tr><th>Event</th><th>Date</th><th>Status</th><th class="text-end">Enrolments</th><th class="text-end">Categories</th><th><span class="visually-hidden">Actions</span></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var s in Model.Events.OrderBy(e => e.Event.EventDate))
+                {
+                    <tr>
+                        <td><a asp-controller="Events" asp-action="Details" asp-route-id="@s.Event.EventId" class="fw-semibold">@s.Event.EventName</a><div class="small text-muted">@s.Event.EventType &middot; @UiFormat.Km(s.Event.DistanceKm)</div></td>
+                        <td>@UiFormat.ShortDate(s.Event.EventDate)</td>
+                        <td>
+                            @if (s.Event.IsUpcoming) { <span class="rd-status rd-status-upcoming"><i class="bi bi-hourglass-split"></i> Upcoming</span> }
+                            else { <span class="rd-status rd-status-neutral"><i class="bi bi-flag-fill"></i> Completed</span> }
+                        </td>
+                        <td class="rd-num"><strong>@s.Enrolments</strong></td>
+                        <td class="rd-num">@s.Event.Categories.Count</td>
+                        <td class="text-end">
+                            <div class="rd-actions">
+                                <a class="btn btn-sm btn-outline-primary" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@s.Event.EventId">Enrolments</a>
+                                <a class="btn btn-sm btn-outline-primary" asp-controller="OrganiserResults" asp-action="Index" asp-route-eventId="@s.Event.EventId">Results</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

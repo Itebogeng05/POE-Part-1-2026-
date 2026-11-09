@@ -1,0 +1,19 @@
+@model int
+@{
+    ViewData["Title"] = Model == 404 ? "Page not found" : "Oops";
+    var (icon, heading, text) = Model switch
+    {
+        404 => ("bi-compass", "Off the course", "We couldn't find that page. The link may be old, or the event may have been removed."),
+        403 => ("bi-slash-circle", "Access denied", "You don't have permission to see that page."),
+        401 => ("bi-lock", "Please log in", "You need to log in to see that page."),
+        _ => ("bi-exclamation-triangle-fill", "We hit a snag", "Something went wrong. Please try again in a moment.")
+    };
+}
+<div class="container">
+    <div class="rd-card rd-empty mt-5">
+        <i class="bi @icon"></i>
+        <h1 class="h2">@heading</h1>
+        <p>@text</p>
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to the start line</a>
+    </div>
+</div>

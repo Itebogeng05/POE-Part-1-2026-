@@ -1,0 +1,67 @@
+@model List<MyResultRow>
+@{
+    ViewData["Title"] = "My results";
+    var best = Model.Where(r => r.Result.Position.HasValue).Select(r => r.Result.Position!.Value).DefaultIfEmpty(0).Min();
+}
+<div class="container">
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">Your race history</span>
+            <h1>My results</h1>
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="rd-card rd-empty">
+            <i class="bi bi-trophy"></i>
+            <h2>No results yet</h2>
+            <p>Once an organiser publishes the results of an event you entered, your time and position will appear here.</p>
+            <a class="btn btn-primary" asp-controller="Participant" asp-action="Enrolments">See my enrolments</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3"><div class="rd-card rd-stat"><i class="bi bi-flag-fill"></i><div class="rd-stat-value">@Model.Count</div><div class="rd-stat-label">Races finished</div></div></div>
+            @if (best > 0)
+            {
+                <div class="col-sm-6 col-lg-3"><div class="rd-card rd-stat"><i class="bi bi-trophy-fill"></i><div class="rd-stat-value">@UiFormat.Ordinal(best)</div><div class="rd-stat-label">Best position</div></div></div>
+            }
+        </div>
+
+        <div class="rd-card rd-table-wrap">
+            <table class="rd-table">
+                <thead>
+                    <tr><th>Event</th><th>Date</th><th>Category</th><th class="text-end">Finish time</th><th>Position</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var row in Model)
+                {
+                    var r = row.Result;
+                    <tr>
+                        <td><a asp-controller="Events" asp-action="Details" asp-route-id="@r.EventId" class="fw-semibold">@r.EventName</a></td>
+                        <td>@(row.EventDate is { } d ? UiFormat.ShortDate(d) : "-")</td>
+                        <td>@r.CategoryName</td>
+                        <td class="rd-num rd-time">@UiFormat.Time(r.FinishTime)</td>
+                        <td>
+                            @if (r.Position is { } pos)
+                            {
+                                <span class="rd-position @(pos <= 3 ? "rd-podium-" + pos : "")">@UiFormat.Ordinal(pos)</span>
+                                @if (row.TotalFinishers is { } total && total >= pos)
+                                {
+                                    <span class="text-muted"> out of @total finishers</span>
+                                }
+                            }
+                            else
+                            {
+                                <partial name="_StatusBadge" model="r.Status" />
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

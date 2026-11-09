@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Find your next finish line";
+    var teaser = ViewData["Teaser"] as List<EventDto> ?? new List<EventDto>();
+}
+<section class="rd-hero">
+    <div class="container">
+        <h1>Find your next <em>finish line</em></h1>
+        <p>Runs, walks and cycle rides across the country. Browse events, enrol in seconds and keep every result in one place.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-lime btn-lg" asp-controller="Account" asp-action="Register">Get started free</a>
+            <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">Log in</a>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <section class="row g-3 rd-steps my-4" aria-label="How it works">
+        <div class="col-md-4"><div class="rd-card rd-step h-100"><span class="rd-step-num">1</span><h2 class="h4 mt-2">Browse</h2><p class="mb-0 text-muted">Filter upcoming events by type, date and distance.</p></div></div>
+        <div class="col-md-4"><div class="rd-card rd-step h-100"><span class="rd-step-num">2</span><h2 class="h4 mt-2">Enrol</h2><p class="mb-0 text-muted">Pick your category and you're on the start list instantly.</p></div></div>
+        <div class="col-md-4"><div class="rd-card rd-step h-100"><span class="rd-step-num">3</span><h2 class="h4 mt-2">Finish</h2><p class="mb-0 text-muted">See your time and position as soon as the organiser publishes.</p></div></div>
+    </section>
+
+    @if (teaser.Count > 0)
+    {
+        <div class="rd-page-head">
+            <div><span class="rd-eyebrow">On the start line</span><h2 class="m-0">Coming up</h2></div>
+            <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login">See all events</a>
+        </div>
+        <div class="row g-4">
+            @foreach (var ev in teaser)
+            {
+                <div class="col-md-6 col-lg-4"><partial name="_EventCard" model="ev" /></div>
+            }
+        </div>
+    }
+</div>

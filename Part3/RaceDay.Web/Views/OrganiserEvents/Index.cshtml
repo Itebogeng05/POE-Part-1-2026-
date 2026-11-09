@@ -1,0 +1,84 @@
+@model List<EventDto>
+@{
+    ViewData["Title"] = "My events";
+}
+<div class="container">
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">Organiser</span>
+            <h1>My events</h1>
+            <p class="rd-lead">Create, edit and delete your events, upload banners and set up categories.</p>
+        </div>
+        <a class="btn btn-primary btn-lg" asp-action="Create"><i class="bi bi-plus-lg"></i> New event</a>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="rd-card rd-empty">
+            <i class="bi bi-calendar-plus"></i>
+            <h2>No events yet</h2>
+            <p>Create your first event. You can add a banner image and categories straight afterwards.</p>
+            <a class="btn btn-primary" asp-action="Create">Create an event</a>
+        </div>
+    }
+    else
+    {
+        <div class="rd-card rd-table-wrap">
+            <table class="rd-table">
+                <thead>
+                    <tr>
+                        <th><span class="visually-hidden">Banner</span></th>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th class="text-end">Distance</th>
+                        <th class="text-end">Categories</th>
+                        <th><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (e.HasBanner)
+                            {
+                                <img class="rd-thumb" src="@Url.Action("Banner", "Events", new { id = e.EventId })" alt="" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span class="rd-thumb rd-thumb-ph"><i class="bi @UiFormat.TypeIcon(e.EventType)"></i></span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@e.EventId" class="fw-semibold">@e.EventName</a>
+                            <div class="small text-muted"><i class="bi bi-geo-alt-fill"></i> @e.Location</div>
+                        </td>
+                        <td>
+                            @UiFormat.ShortDate(e.EventDate)
+                            <div>
+                                @if (e.IsUpcoming) { <span class="rd-status rd-status-upcoming"><i class="bi bi-hourglass-split"></i> Upcoming</span> }
+                                else { <span class="rd-status rd-status-neutral"><i class="bi bi-flag-fill"></i> Completed</span> }
+                            </div>
+                        </td>
+                        <td><span class="rd-type-chip rd-type-@e.EventType.ToLowerInvariant()" style="position: static"><i class="bi @UiFormat.TypeIcon(e.EventType)"></i> @e.EventType</span></td>
+                        <td class="rd-num">@UiFormat.Km(e.DistanceKm)</td>
+                        <td class="rd-num">@e.Categories.Count</td>
+                        <td class="text-end">
+                            <div class="rd-actions">
+                                <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@e.EventId"><i class="bi bi-pencil"></i> Edit</a>
+                                <a class="btn btn-sm btn-outline-primary" asp-controller="OrganiserCategories" asp-action="Index" asp-route-eventId="@e.EventId"><i class="bi bi-tags"></i> Categories</a>
+                                <form asp-action="Delete" asp-route-id="@e.EventId" method="post" class="d-inline"
+                                      data-confirm="Delete &quot;@e.EventName&quot;? Its categories, enrolments and results will be deleted too. This cannot be undone."
+                                      data-confirm-title="Delete event" data-confirm-button="Yes, delete it">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

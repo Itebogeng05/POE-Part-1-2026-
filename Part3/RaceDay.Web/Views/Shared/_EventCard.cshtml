@@ -1,0 +1,42 @@
+@model EventDto
+@{
+    var fromFee = Model.Categories.Count > 0 ? Model.Categories.Min(c => c.EntryFee) : (decimal?)null;
+}
+<article class="rd-card rd-event-card h-100">
+    <a class="rd-event-banner" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId" tabindex="-1" aria-hidden="true">
+        @if (Model.HasBanner)
+        {
+            <img src="@Url.Action("Banner", "Events", new { id = Model.EventId })" alt="" loading="lazy" />
+        }
+        else
+        {
+            <span class="rd-banner-placeholder"><i class="bi @UiFormat.TypeIcon(Model.EventType)"></i></span>
+        }
+        <span class="rd-type-chip rd-type-@Model.EventType.ToLowerInvariant()"><i class="bi @UiFormat.TypeIcon(Model.EventType)"></i> @Model.EventType</span>
+        <span class="rd-date-chip">
+            <strong>@Model.EventDate.ToString("dd")</strong>
+            <small>@Model.EventDate.ToString("MMM").ToUpperInvariant()</small>
+        </span>
+    </a>
+    <div class="rd-event-body">
+        <h3 class="rd-event-title"><a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId">@Model.EventName</a></h3>
+        <ul class="rd-meta list-unstyled">
+            <li><i class="bi bi-geo-alt-fill"></i> @Model.Location</li>
+            <li><i class="bi bi-calendar3"></i> @UiFormat.Date(Model.EventDate)</li>
+            <li><i class="bi bi-signpost-split-fill"></i> @UiFormat.Km(Model.DistanceKm)</li>
+        </ul>
+        <div class="rd-event-foot">
+            <span class="rd-fee">
+                @if (fromFee is not null)
+                {
+                    <small>from</small> <strong>@UiFormat.Rand(fromFee.Value)</strong>
+                }
+                else
+                {
+                    <small>Categories coming soon</small>
+                }
+            </span>
+            <a class="btn btn-sm btn-primary" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId">View event <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+</article>

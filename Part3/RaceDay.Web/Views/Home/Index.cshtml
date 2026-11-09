@@ -1,0 +1,92 @@
+@model EventListViewModel
+@{
+    ViewData["Title"] = "Find events";
+    var f = Model.Filter;
+    var firstName = Model.UserName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "there";
+}
+<div class="container">
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">Hi @firstName</span>
+            <h1>Upcoming events</h1>
+            <p class="rd-lead">Pick a race, choose a category and you're on the start list.</p>
+        </div>
+    </div>
+
+    @if (ViewData["FilterNote"] is string note)
+    {
+        <div class="alert alert-info rd-alert" role="status"><i class="bi bi-info-circle-fill"></i> <span>@note</span></div>
+    }
+
+    <form method="get" asp-action="Index" class="rd-card rd-filter" aria-label="Filter events">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label for="q" class="form-label">Search</label>
+                <input id="q" name="q" value="@f.Q" class="form-control" placeholder="Name or place" maxlength="100" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label for="type" class="form-label">Type</label>
+                <select id="type" name="type" class="form-select">
+                    <option value="">All types</option>
+                    @foreach (var t in EventFormViewModel.EventTypes)
+                    {
+                        <option value="@t" selected="@string.Equals(f.Type, t, StringComparison.OrdinalIgnoreCase)">@t</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6 col-6">
+                <label for="from" class="form-label">From</label>
+                <input id="from" name="from" type="date" value="@(f.From?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+            <div class="col-lg-2 col-md-6 col-6">
+                <label for="to" class="form-label">To</label>
+                <input id="to" name="to" type="date" value="@(f.To?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+            <div class="col-lg-1 col-md-3 col-6">
+                <label for="minKm" class="form-label">Min km</label>
+                <input id="minKm" name="minKm" type="number" min="0" step="any" value="@f.MinKm" class="form-control" />
+            </div>
+            <div class="col-lg-1 col-md-3 col-6">
+                <label for="maxKm" class="form-label">Max km</label>
+                <input id="maxKm" name="maxKm" type="number" min="0" step="any" value="@f.MaxKm" class="form-control" />
+            </div>
+            <div class="col-lg-1 col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel-fill"></i></button>
+            </div>
+        </div>
+        @if (f.IsActive)
+        {
+            <div class="mt-3 small text-muted">
+                Showing @Model.Events.Count of @Model.TotalUpcoming upcoming events.
+                <a asp-action="Index" class="ms-2">Clear filters</a>
+            </div>
+        }
+    </form>
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="rd-card rd-empty">
+            <i class="bi bi-calendar-x"></i>
+            @if (f.IsActive)
+            {
+                <h2>No events match those filters</h2>
+                <p>Try a wider date range or a different distance.</p>
+                <a class="btn btn-primary" asp-action="Index">Clear filters</a>
+            }
+            else
+            {
+                <h2>No upcoming events yet</h2>
+                <p>Check back soon. Organisers are adding new races all the time.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var ev in Model.Events)
+            {
+                <div class="col-md-6 col-xl-4"><partial name="_EventCard" model="ev" /></div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,145 @@
+@model EventDetailsViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.EventName;
+    var user = Context.Session.GetUser();
+}
+<div class="container">
+    <nav aria-label="breadcrumb" class="pt-4">
+        <a asp-controller="Home" asp-action="Index" class="text-decoration-none"><i class="bi bi-arrow-left"></i> All events</a>
+    </nav>
+
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow"><i class="bi @UiFormat.TypeIcon(ev.EventType)"></i> @ev.EventType</span>
+            <h1>@ev.EventName</h1>
+        </div>
+        @if (Model.IsOwner)
+        {
+            <div class="rd-actions">
+                <a class="btn btn-outline-primary" asp-controller="OrganiserEvents" asp-action="Edit" asp-route-id="@ev.EventId"><i class="bi bi-pencil"></i> Edit</a>
+                <a class="btn btn-primary" asp-controller="OrganiserCategories" asp-action="Index" asp-route-eventId="@ev.EventId"><i class="bi bi-tags"></i> Categories</a>
+            </div>
+        }
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="rd-detail-banner mb-4">
+                @if (ev.HasBanner)
+                {
+                    <img src="@Url.Action("Banner", "Events", new { id = ev.EventId })" alt="Banner for @ev.EventName" />
+                }
+                else
+                {
+                    <span class="rd-banner-placeholder"><i class="bi @UiFormat.TypeIcon(ev.EventType)"></i></span>
+                }
+            </div>
+
+            <div class="rd-card rd-card-pad mb-4">
+                <div class="rd-info-grid mb-3">
+                    <div class="rd-info"><small>Date</small><strong><i class="bi bi-calendar3"></i>@UiFormat.Date(ev.EventDate)</strong></div>
+                    <div class="rd-info"><small>Location</small><strong><i class="bi bi-geo-alt-fill"></i>@ev.Location</strong></div>
+                    <div class="rd-info"><small>Distance</small><strong><i class="bi bi-signpost-split-fill"></i>@UiFormat.Km(ev.DistanceKm)</strong></div>
+                    <div class="rd-info"><small>Type</small><strong><i class="bi @UiFormat.TypeIcon(ev.EventType)"></i>@ev.EventType</strong></div>
+                </div>
+                <h2 class="h4">About this event</h2>
+                @if (string.IsNullOrWhiteSpace(ev.Description))
+                {
+                    <p class="text-muted mb-0">The organiser hasn't added a description yet.</p>
+                }
+                else
+                {
+                    <p class="mb-0" style="white-space: pre-line">@ev.Description</p>
+                }
+            </div>
+
+            @if (!ev.IsUpcoming)
+            {
+                <div class="rd-card mb-4">
+                    <div class="rd-card-pad pb-0"><h2 class="h4">Results</h2></div>
+                    @if (Model.Results.Count == 0)
+                    {
+                        <p class="rd-card-pad text-muted mb-0">Results haven't been published for this event yet.</p>
+                    }
+                    else
+                    {
+                        <div class="rd-table-wrap">
+                            <table class="rd-table">
+                                <thead><tr><th>Pos</th><th>Name</th><th>Category</th><th class="text-end">Time</th></tr></thead>
+                                <tbody>
+                                @foreach (var r in Model.Results.OrderBy(r => r.Position))
+                                {
+                                    <tr>
+                                        <td><span class="rd-position @(r.Position <= 3 ? "rd-podium-" + r.Position : "")">@r.Position</span></td>
+                                        <td>@r.ParticipantName</td>
+                                        <td>@r.CategoryName</td>
+                                        <td class="rd-num rd-time">@UiFormat.Time(r.FinishTime)</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <aside class="rd-card rd-card-pad" aria-label="Categories and enrolment">
+                <h2 class="h3">Categories</h2>
+
+                @if (ev.Categories.Count == 0)
+                {
+                    <p class="text-muted mb-0">The organiser hasn't added any categories yet. Check back soon.</p>
+                }
+                else if (Model.MyEnrolment is { } mine)
+                {
+                    <div class="mb-3">
+                        <p class="mb-2">You're enrolled in <strong>@mine.CategoryName</strong>.</p>
+                        <partial name="_StatusBadge" model="mine.Status" />
+                    </div>
+                    <a class="btn btn-outline-primary w-100" asp-controller="Participant" asp-action="Enrolments">View my enrolments</a>
+                }
+                else if (Model.CanEnrol)
+                {
+                    <form asp-controller="Participant" asp-action="Enrol" method="post">
+                        <input type="hidden" name="eventId" value="@ev.EventId" />
+                        @{ var first = true; }
+                        @foreach (var c in ev.Categories)
+                        {
+                            <div class="rd-category-option">
+                                <input type="radio" name="categoryId" id="cat-@c.CategoryId" value="@c.CategoryId" required="@first" />
+                                <label for="cat-@c.CategoryId">
+                                    <span>
+                                        <span class="rd-category-name d-block">@c.CategoryName</span>
+                                        <span class="rd-category-meta">@UiFormat.Km(c.DistanceKm)</span>
+                                    </span>
+                                    <span class="rd-category-fee">@UiFormat.Rand(c.EntryFee)</span>
+                                </label>
+                            </div>
+                            first = false;
+                        }
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-2" data-busy-text="Enrolling...">Enrol now</button>
+                    </form>
+                }
+                else
+                {
+                    @foreach (var c in ev.Categories)
+                    {
+                        <div class="rd-category-option">
+                            <label class="rd-info d-flex" style="cursor: default">
+                                <span><span class="rd-category-name d-block">@c.CategoryName</span><span class="rd-category-meta">@UiFormat.Km(c.DistanceKm)</span></span>
+                                <span class="rd-category-fee">@UiFormat.Rand(c.EntryFee)</span>
+                            </label>
+                        </div>
+                    }
+                    @if (user is { IsParticipant: true } && !ev.IsUpcoming)
+                    {
+                        <p class="text-muted mt-3 mb-0"><i class="bi bi-flag-fill"></i> This event has already taken place, so enrolment is closed.</p>
+                    }
+                }
+            </aside>
+        </div>
+    </div>
+</div>

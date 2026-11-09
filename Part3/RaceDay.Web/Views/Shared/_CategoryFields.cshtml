@@ -1,0 +1,18 @@
+@model CategoryFormViewModel
+<div class="row g-3">
+    <div class="col-md-5">
+        <label asp-for="CategoryName" class="form-label"></label>
+        <input asp-for="CategoryName" class="form-control" maxlength="50" placeholder="e.g. 10km or Under 20" />
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="DistanceKm" class="form-label"></label>
+        <input asp-for="DistanceKm" type="number" step="0.01" min="0.01" max="1000" class="form-control" />
+        <span asp-validation-for="DistanceKm" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EntryFee" class="form-label"></label>
+        <input asp-for="EntryFee" type="number" step="0.01" min="0" max="100000" class="form-control" />
+        <span asp-validation-for="EntryFee" class="text-danger"></span>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Edit category";
+    var eventName = ViewData["EventName"] as string ?? "event";
+}
+<div class="container">
+    <nav aria-label="breadcrumb" class="pt-4">
+        <a asp-action="Index" asp-route-eventId="@Model.EventId" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Categories for @eventName</a>
+    </nav>
+
+    <div class="rd-page-head">
+        <div>
+            <span class="rd-eyebrow">@eventName</span>
+            <h1>Edit category</h1>
+        </div>
+    </div>
+
+    <div class="rd-card rd-card-pad mb-5">
+        <form asp-action="Edit" asp-route-eventId="@Model.EventId" asp-route-id="@Model.CategoryId" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <partial name="_CategoryFields" model="Model" />
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg" data-busy-text="Saving...">Save changes</button>
+                <a class="btn btn-light btn-lg" asp-action="Index" asp-route-eventId="@Model.EventId">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScripts" />
+}
